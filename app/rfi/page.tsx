@@ -57,7 +57,7 @@ export default function RFIPage() {
             <h1 className="font-bold text-base">RFI</h1>
             <p className="text-[10px] text-[#505050]">Ранняя стадия, 40bb</p>
           </div>
-          {tab === 'quiz' && state.state?.streak > 0 && (
+          {tab === 'quiz' && state.streak > 0 && (
             <span className="text-yellow-400 font-bold text-sm">{state.streak}⚡</span>
           )}
         </div>
