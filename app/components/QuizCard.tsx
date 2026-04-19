@@ -117,25 +117,38 @@ export default function QuizCard(props: QuizCardProps) {
     )
   }
 
+  const handKey = (question as any).handKey || (question as any).hand || (question as any).key || 'AA'
+  const cards = parseHand(handKey)
+
   return (
-    <div className="bg-[#242424] border border-[#383838] rounded-2xl p-6">
+    <div className="bg-[#242424] border border-[#383838] rounded-2xl p-8">
       {streak > 0 && (
-        <div className="text-center mb-4">
-          <span className="text-yellow-400 font-bold text-lg">
+        <div className="text-center mb-6">
+          <span className="text-yellow-400 font-bold text-xl">
             ⚡ Серия: {streak}
           </span>
         </div>
       )}
 
-      <div className="text-center mb-6">
-        <p className="text-xs text-[#a0a0a0] mb-2">{title}</p>
-        <p className="text-4xl font-bold mb-4">
-          {(question as any).handKey || (question as any).hand || (question as any).key || 'AA'}
-        </p>
-        <p className="text-sm text-[#a0a0a0]">Ваше действие?</p>
+      <div className="text-center mb-4">
+        <p className="text-xs text-[#a0a0a0] mb-4">{title}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-6">
+      {/* Карты с мастями */}
+      <div className="flex gap-4 justify-center mb-8">
+        {cards.map((card, i) => (
+          <div key={i} className="bg-[#1a1a1a] border-2 border-[#383838] rounded-2xl px-8 py-6 flex flex-col items-center gap-1">
+            <span className="text-5xl font-bold leading-none">{card.rank}</span>
+            <span className={`text-4xl leading-none ${SUIT_CLASS[card.suit]}`}>
+              {card.suit}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-center text-base text-[#a0a0a0] mb-6">Ваше действие?</p>
+
+      <div className="grid grid-cols-2 gap-3 mb-8">
         {options.map((opt) => {
           const isCorrect = answered && opt.value === question.correct
           const isChosen = answered && opt.value === chosen
@@ -147,8 +160,8 @@ export default function QuizCard(props: QuizCardProps) {
               onClick={() => !answered && onAnswer(opt.value)}
               disabled={answered}
               className={`
-                py-3 px-3 rounded-xl text-xs font-semibold whitespace-pre-line
-                transition-all border
+                py-4 px-4 rounded-2xl text-sm font-semibold whitespace-pre-line
+                transition-all border-2
                 ${isCorrect
                   ? 'bg-green-600/20 text-green-400 border-green-600/40'
                   : isWrong
@@ -166,12 +179,12 @@ export default function QuizCard(props: QuizCardProps) {
 
       {answered && (
         <div className="text-center">
-          <p className="text-sm text-[#a0a0a0] mb-4">
-            Правильно: <span className="text-green-400 font-semibold">{correctLabel}</span>
+          <p className="text-sm text-[#a0a0a0] mb-6">
+            Правильно: <span className="text-green-400 font-semibold text-base">{correctLabel}</span>
           </p>
           <button
             onClick={onNext}
-            className="bg-white text-black py-2.5 px-6 rounded-xl font-semibold text-sm hover:bg-gray-200 active:scale-95 transition-all"
+            className="bg-white text-black py-3 px-8 rounded-2xl font-semibold text-base hover:bg-gray-200 active:scale-95 transition-all"
           >
             Следующий вопрос
           </button>

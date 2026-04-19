@@ -13,16 +13,16 @@ const INTERESTING = ['r4','bl','fs','ws']
 const OPTIONS = [
   { value: 'r4', label: '4-бет\nvs 3-бет' },
   { value: 'bl', label: 'Колл\nvs 3-бет' },
-  { value: 'rf', label: 'RFI\nдефолт' },
-  { value: 'fs', label: 'Фолд\nсильный' },
-  { value: 'ws', label: 'RFI\nслабый' },
-  { value: 'fd', label: 'Фолд' },
+  { value: 'rf', label: 'Фолд\nvs 3-бет' },
+  { value: 'fs', label: 'Колл vs 3-бет\nor 4-бет <25bb' },
+  { value: 'lc', label: 'Лимп\nколл' },
+  { value: 'lp', label: 'Лимп\nпуш' },
 ]
 
 export default function RFIPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<'chart' | 'quiz'>('chart')
-  const [pos, setPos] = useState<RFIPosition>('UTG')
+  const [pos, setPos] = useState<RFIPosition>('EP')
   const [hovered, setHovered] = useState<{ key: string; value: string | null } | null>(null)
   const router = useRouter()
 
@@ -32,7 +32,7 @@ export default function RFIPage() {
       if (!data.user) { router.push('/login'); return }
       setUserId(data.user.id)
     })
-  }, [])
+  }, [router])
 
   const { state, nextQuestion, answer } = useQuiz({
     charts: RFI_CHARTS,
@@ -50,53 +50,41 @@ export default function RFIPage() {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header */}
-      <div className="bg-[#1a1a1a] border-b border-[#383838] px-4 pt-4 pb-3">
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <h1 className="font-bold text-base">RFI</h1>
-            <p className="text-[10px] text-[#505050]">Ранняя стадия, 40bb</p>
-          </div>
-          {tab === 'quiz' && state.streak > 0 && (
-            <span className="text-yellow-400 font-bold text-sm">{state.streak}⚡</span>
-          )}
+      <main>
+        <div className="mb-6">
+          <h1>RFI</h1>
+          <p className="subtitle">Ранняя стадия, 40bb</p>
         </div>
 
         {/* Позиции */}
-        <div className="flex gap-1.5 mb-3">
+        <div className="positions-grid mb-4">
           {RFI_POSITIONS.map(p => (
             <button
               key={p}
               onClick={() => { setPos(p); setTab('chart') }}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-colors
-                ${pos === p && tab === 'chart'
-                  ? 'bg-[#2D5016] text-white'
-                  : 'bg-[#242424] text-[#a0a0a0] hover:text-white border border-[#383838]'}`}
+              className={pos === p && tab === 'chart' ? 'active' : ''}
             >
               {p}
             </button>
           ))}
         </div>
 
-        {/* Вкладки */}
-        <div className="flex gap-1.5">
-          {(['chart','quiz'] as const).map(t => (
+        {/* Табы */}
+        <div className="tabs">
+          {(['chart', 'quiz'] as const).map(t => (
             <button
               key={t}
-              onClick={() => { setTab(t); if (t === 'quiz' && !state.question) nextQuestion() }}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors border
-                ${tab === t
-                  ? 'bg-[#2e2e2e] text-white border-[#555]'
-                  : 'bg-transparent text-[#a0a0a0] border-[#383838] hover:text-white'}`}
+              onClick={() => {
+                setTab(t)
+                if (t === 'quiz' && !state.question) nextQuestion()
+              }}
+              className={tab === t ? 'active' : ''}
             >
               {t === 'chart' ? 'Чарт' : 'Квиз'}
             </button>
           ))}
         </div>
-      </div>
 
-      <div className="p-4">
-        {/* CHART TAB */}
         {tab === 'chart' && (
           <>
             <Grid13
@@ -105,32 +93,28 @@ export default function RFIPage() {
               onHover={(key, value) => setHovered(key ? { key, value } : null)}
             />
 
-            {/* Tooltip */}
             {hovered?.key && (
-              <div className="mt-3 bg-[#242424] border border-[#383838] rounded-xl px-4 py-2.5 text-sm">
+              <div className="card-compact">
                 <span className="font-bold">{hovered.key}</span>
-                <span className="text-[#a0a0a0] mx-2">→</span>
-                <span className={hovered.value
-                  ? RFI_COLOR[hovered.value as keyof typeof RFI_COLOR]?.split(' ')[1] ?? 'text-white'
-                  : 'text-white/20'}>
+                <span className="text-gray-500 mx-2">→</span>
+                <span className="text-white">
                   {hovered.value ? RFI_LABEL[hovered.value as keyof typeof RFI_LABEL] : 'Фолд'}
                 </span>
               </div>
             )}
 
-            {/* Легенда */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {Object.entries(RFI_LABEL).map(([k, label]) => (
-                <div key={k} className="flex items-center gap-2">
-                  <div className={`w-5 h-5 rounded flex-shrink-0 ${RFI_COLOR[k as keyof typeof RFI_COLOR]?.split(' ').slice(0,1).join(' ')}`} />
-                  <span className="text-[10px] text-[#a0a0a0]">{label}</span>
+            <div className="mt-6 space-y-2">
+              <p className="text-sm font-semibold mb-3">Легенда:</p>
+              {Object.entries(RFI_LABEL).filter(([k]) => k !== 'fd').map(([k, label]) => (
+                <div key={k} className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-lg ${RFI_COLOR[k as keyof typeof RFI_COLOR]?.split(' ')[0]}`} />
+                  <span className="text-sm text-gray-400">{label}</span>
                 </div>
               ))}
             </div>
           </>
         )}
 
-        {/* QUIZ TAB */}
         {tab === 'quiz' && (
           <QuizCard
             question={state.question}
@@ -144,8 +128,7 @@ export default function RFIPage() {
             streak={state.streak}
           />
         )}
-      </div>
-
+      </main>
       <NavBar />
     </div>
   )
