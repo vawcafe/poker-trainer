@@ -288,14 +288,20 @@ nav button.active span.label {
 }
 
 /* Масти карт */
-.suit-hearts,
-.suit-diamonds {
+.suit-hearts {
   color: #ef4444;
 }
 
-.suit-spades,
+.suit-diamonds {
+  color: #3b82f6;
+}
+
+.suit-spades {
+  color: #000000;
+}
+
 .suit-clubs {
-  color: #ffffff;
+  color: #10b981;
 }
 
 /* Статистика */
