@@ -8,21 +8,20 @@ import QuizCard from '../components/QuizCard'
 import { useQuiz } from '../hooks/useQuiz'
 import { PUSH_FOLD, PF_POSITIONS, PF_LABEL, PF_COLOR, type PFPosition } from '../data/pushfold'
 
-// Для квиза Push/Fold спрашиваем: "Push or Fold при стеке Xbb?"
 const STACKS = [
-  { key: 'c14', bb: [14,15] },
-  { key: 'c12', bb: [12,13] },
-  { key: 'c10', bb: [10,11] },
-  { key: 'c8',  bb: [8,9] },
-  { key: 'c6',  bb: [6,7] },
-  { key: 'c4',  bb: [4,5] },
+  { key: 'c14', bb: [14, 15] },
+  { key: 'c12', bb: [12, 13] },
+  { key: 'c10', bb: [10, 11] },
+  { key: 'c8',  bb: [8,  9]  },
+  { key: 'c6',  bb: [6,  7]  },
+  { key: 'c4',  bb: [4,  5]  },
 ]
 
 function buildQuizCharts() {
   const result: Record<string, Record<string, string>> = {}
   for (const pos of PF_POSITIONS) {
     const chart = PUSH_FOLD[pos] ?? {}
-    for (const { key, bb } of STACKS) {
+    for (const { bb } of STACKS) {
       const bbVal = bb[0]
       const chartKey = `${pos}_${bbVal}bb`
       const quizChart: Record<string, string> = {}
@@ -48,6 +47,11 @@ function buildQuizCharts() {
 
 const PF_QUIZ_CHARTS = buildQuizCharts()
 
+const PF_OPTIONS = [
+  { value: 'push', label: 'Пуш (All-in)' },
+  { value: 'fold', label: 'Фолд' },
+]
+
 export default function PushFoldPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<'chart' | 'quiz'>('chart')
@@ -72,14 +76,12 @@ export default function PushFoldPage() {
   const chart = PUSH_FOLD[pos] ?? {}
 
   const quizTitle = (() => {
-    if (!state.question) return 'Push/Fold Квиз'
+    if (!state.question) return 'Push/Fold'
     const parts = state.question.chartKey.split('_')
     return `${parts[0]} — стек ${parts[1]}`
   })()
 
-  const handleAnswer = (correct: boolean) => {
-    answer(correct ? 'push' : 'fold')
-  }
+  const correctLabel = state.question?.correct === 'push' ? 'Пуш (All-in)' : 'Фолд'
 
   return (
     <div className="min-h-screen pb-20">
@@ -89,7 +91,6 @@ export default function PushFoldPage() {
           <p className="subtitle">Короткий стек, 4-15bb</p>
         </div>
 
-        {/* Позиции */}
         <div className="positions-grid mb-4">
           {PF_POSITIONS.map(p => (
             <button
@@ -102,7 +103,6 @@ export default function PushFoldPage() {
           ))}
         </div>
 
-        {/* Табы */}
         <div className="tabs">
           {(['chart', 'quiz'] as const).map(t => (
             <button
@@ -125,7 +125,6 @@ export default function PushFoldPage() {
               colorMap={PF_COLOR}
               onHover={(key, value) => setHovered(key ? { key, value } : null)}
             />
-
             {hovered?.key && (
               <div className="card-compact">
                 <span className="font-bold">{hovered.key}</span>
@@ -137,7 +136,6 @@ export default function PushFoldPage() {
                 </span>
               </div>
             )}
-
             <div className="mt-6 space-y-2">
               <p className="text-sm font-semibold mb-3">Легенда:</p>
               {Object.entries(PF_LABEL).map(([k, label]) => (
@@ -150,16 +148,17 @@ export default function PushFoldPage() {
           </>
         )}
 
-        {tab === 'quiz' && state.question && (
+        {tab === 'quiz' && (
           <QuizCard
-            hand={state.question.handKey}
-            onAnswer={handleAnswer}
-            correctAction={state.question.correct}
-            stats={{
-              total: 0,
-              correct: 0,
-              streak: state.streak,
-            }}
+            question={state.question}
+            answered={state.answered}
+            chosen={state.chosen}
+            options={PF_OPTIONS}
+            title={quizTitle}
+            onAnswer={answer}
+            onNext={nextQuestion}
+            correctLabel={correctLabel}
+            streak={state.streak}
           />
         )}
       </main>
