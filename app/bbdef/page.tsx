@@ -119,7 +119,7 @@ export default function BBDefPage() {
 
             <div className="text-center mb-8">
               <p className="text-sm text-gray-500 mb-2">{quizTitle}</p>
-              <p className="text-3xl font-bold mb-4">{state.question.hand}</p>
+              <p className="text-3xl font-bold mb-4">{state.question.key}</p>
               <p className="text-lg text-gray-400">Ваше действие?</p>
             </div>
 
