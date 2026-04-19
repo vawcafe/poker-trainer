@@ -2,34 +2,30 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const TABS = [
-  { href: '/pushfold', label: 'Push/Fold', icon: '⚡' },
-  { href: '/bbdef',    label: 'BB Def',    icon: '🛡' },
-  { href: '/rfi',      label: 'RFI',       icon: '🃏' },
-  { href: '/dashboard', label: 'Профиль',  icon: '📊' },
+const NAV_ITEMS = [
+  { href: '/pushfold', label: 'Push/Fold' },
+  { href: '/bbdef', label: 'BB Def' },
+  { href: '/rfi', label: 'RFI' },
+  { href: '/dashboard', label: 'Stats' },
 ]
 
 export default function NavBar() {
-  const path = usePathname()
+  const pathname = usePathname()
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a1a] border-t border-[#383838] flex max-w-[430px] mx-auto">
-      {TABS.map(t => {
-        const active = path.startsWith(t.href)
-        return (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`
-              flex-1 flex flex-col items-center justify-center py-2 gap-0.5
-              text-[10px] font-semibold transition-colors
-              ${active ? 'text-white bg-[#2D5016]' : 'text-[#a0a0a0] hover:text-white'}
-            `}
-          >
-            <span className="text-base leading-none">{t.icon}</span>
-            <span>{t.label}</span>
-          </Link>
-        )
-      })}
+    <nav>
+      <div className="nav-container">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link key={item.href} href={item.href}>
+              <button className={isActive ? 'active' : ''}>
+                {item.label}
+              </button>
+            </Link>
+          )
+        })}
+      </div>
     </nav>
   )
 }
