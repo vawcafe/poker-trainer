@@ -29,7 +29,15 @@ body {
 main {
   max-width: 480px;
   margin: 0 auto;
-  padding: 20px 20px 100px 20px;
+  padding: 20px 20px 120px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+main > * {
+  width: 100%;
+  max-width: 480px;
 }
 
 /* Заголовки */
@@ -214,13 +222,15 @@ nav button {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 16px;
+  padding: 14px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 0;
 }
 
 nav button.active {
@@ -235,29 +245,57 @@ nav button.active span.label {
 
 /* Квиз карточка */
 .quiz-card {
-  background: var(--bg-card);
+  background: transparent;
   border-radius: 24px;
   padding: 32px 24px;
-  border: 1px solid var(--border);
+  border: none;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .quiz-hand {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
-  margin: 24px 0;
+  margin: 32px 0;
 }
 
 .card-display {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
-  font-size: 2rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 28px;
+  font-size: 2.5rem;
   font-weight: 700;
-  min-width: 80px;
+  min-width: 100px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-rank {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.card-suit {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* Масти карт */
+.suit-hearts,
+.suit-diamonds {
+  color: #ef4444;
+}
+
+.suit-spades,
+.suit-clubs {
+  color: #ffffff;
 }
 
 /* Статистика */
