@@ -9,14 +9,13 @@ const SUITS: Record<string, Suit> = {
   c: '♣',
 }
 
-const SUIT_CLASS: Record<Suit, string> = {
-  '♠': 'suit-spades',
-  '♥': 'suit-hearts',
-  '♦': 'suit-diamonds',
-  '♣': 'suit-clubs',
+const SUIT_COLORS: Record<Suit, string> = {
+  '♠': '#ffffff',
+  '♥': '#ef4444',
+  '♦': '#3b82f6',
+  '♣': '#10b981',
 }
 
-// Новый интерфейс (Push/Fold, BB Def с мастями)
 interface NewQuizCardProps {
   hand: string
   onAnswer: (correct: boolean) => void
@@ -24,7 +23,6 @@ interface NewQuizCardProps {
   stats?: { total: number; correct: number; streak: number }
 }
 
-// Старый интерфейс (RFI и другие страницы)
 interface OldQuizCardProps {
   question: any
   answered: boolean
@@ -39,137 +37,172 @@ interface OldQuizCardProps {
 
 type QuizCardProps = NewQuizCardProps | OldQuizCardProps
 
-// Type guard
 function isNewInterface(props: QuizCardProps): props is NewQuizCardProps {
   return 'hand' in props
 }
 
+function CardDisplay({ card, glow }: { card: { rank: string; suit: Suit }, glow?: 'green' | 'red' | null }) {
+  const suitColor = SUIT_COLORS[card.suit]
+  const glowStyle = glow === 'green'
+    ? { boxShadow: '0 0 40px 12px rgba(34,197,94,0.55)', borderColor: '#22c55e' }
+    : glow === 'red'
+    ? { boxShadow: '0 0 40px 12px rgba(239,68,68,0.55)', borderColor: '#ef4444' }
+    : { borderColor: '#333333' }
+
+  return (
+    <div style={{
+      background: '#1a1a1a',
+      border: '2px solid',
+      borderRadius: 20,
+      width: 115,
+      minHeight: 160,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      transition: 'box-shadow 0.3s, border-color 0.3s',
+      ...glowStyle,
+    }}>
+      <span style={{ fontSize: 56, fontWeight: 800, color: '#ffffff', lineHeight: 1 }}>
+        {card.rank}
+      </span>
+      <span style={{ fontSize: 42, color: suitColor, lineHeight: 1 }}>
+        {card.suit}
+      </span>
+    </div>
+  )
+}
+
 export default function QuizCard(props: QuizCardProps) {
-  // Новый интерфейс — с мастями карт
+
+  // ── НОВЫЙ интерфейс ───────────────────────────────────────────
   if (isNewInterface(props)) {
     const { hand, onAnswer, correctAction, stats } = props
     const cards = parseHand(hand)
 
     return (
-      <div className="quiz-card">
+      <div style={{ paddingBottom: 24 }}>
         {stats && stats.streak > 0 && (
-          <div className="text-center mb-4">
-            <div className="text-yellow-400 text-2xl font-bold">
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <span style={{ color: '#facc15', fontSize: 22, fontWeight: 700 }}>
               ⚡ Серия: {stats.streak}
-            </div>
+            </span>
           </div>
         )}
 
-        <div className="quiz-hand">
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 32 }}>
           {cards.map((card, i) => (
-            <div key={i} className="card-display">
-              <span className="card-rank">{card.rank}</span>
-              <span className={`card-suit ${SUIT_CLASS[card.suit]}`}>
-                {card.suit}
-              </span>
-            </div>
+            <CardDisplay key={i} card={card} />
           ))}
         </div>
 
-        <div className="text-center mb-6">
-          <p className="text-lg text-gray-400">
-            {correctAction === 'push' ? 'Пушить или фолдить?' : 'Ваше действие?'}
-          </p>
-        </div>
+        <p style={{ textAlign: 'center', color: '#999', fontSize: 15, marginBottom: 24 }}>
+          {correctAction === 'push' ? 'Пушить или фолдить?' : 'Ваше действие?'}
+        </p>
 
-        <div className="flex gap-3 justify-center w-full max-w-md">
-          <button
-            onClick={() => onAnswer(true)}
-            className="flex-1 py-4 text-lg font-semibold"
-          >
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={() => onAnswer(true)}
+            style={{ flex: 1, padding: '13px', fontSize: 14, fontWeight: 600, borderRadius: 18 }}>
             {correctAction === 'push' ? 'Пуш (All-in)' : 'Call'}
           </button>
-          <button
-            onClick={() => onAnswer(false)}
-            className="flex-1 py-4 text-lg font-semibold"
-          >
+          <button onClick={() => onAnswer(false)}
+            style={{ flex: 1, padding: '13px', fontSize: 14, fontWeight: 600, borderRadius: 18 }}>
             Фолд
           </button>
         </div>
-
-        {stats && (
-          <div className="mt-8 text-center text-sm text-gray-500">
-            Правильно: {stats.correct} из {stats.total}
-            {stats.total > 0 && (
-              <> ({Math.round((stats.correct / stats.total) * 100)}%)</>
-            )}
-          </div>
-        )}
       </div>
     )
   }
 
-  // Старый интерфейс — для RFI и остальных
+  // ── СТАРЫЙ интерфейс (RFI, BB Def) ───────────────────────────
   const { question, answered, chosen, options, title, onAnswer, onNext, correctLabel, streak } = props
 
   if (!question) {
     return (
-      <div className="text-center py-12">
-        <button onClick={onNext} className="primary py-3 px-8">
+      <div style={{ textAlign: 'center', padding: '48px 0' }}>
+        <button onClick={onNext} className="primary" style={{ padding: '12px 32px' }}>
           Начать квиз
         </button>
       </div>
     )
   }
 
-  const handKey = (question as any).handKey || (question as any).hand || (question as any).key || 'AA'
+  const handKey = question.handKey || question.hand || question.key || 'AA'
   const cards = parseHand(handKey)
+  const isCorrectAnswer = answered && chosen === question.correct
+  const glow = answered ? (isCorrectAnswer ? 'green' : 'red') as 'green' | 'red' : null
 
   return (
-    <div className="bg-[#242424] border border-[#383838] rounded-2xl p-8">
+    <div style={{ paddingBottom: 24 }}>
+
       {streak > 0 && (
-        <div className="text-center mb-6">
-          <span className="text-yellow-400 font-bold text-xl">
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <span style={{ color: '#facc15', fontSize: 20, fontWeight: 700 }}>
             ⚡ Серия: {streak}
           </span>
         </div>
       )}
 
-      <div className="text-center mb-4">
-        <p className="text-xs text-[#a0a0a0] mb-4">{title}</p>
-      </div>
+      <p style={{ textAlign: 'center', color: '#555', fontSize: 12, marginBottom: 20 }}>
+        {title}
+      </p>
 
-      {/* Карты с мастями */}
-      <div className="flex gap-4 justify-center mb-8">
+      {/* Карты */}
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 28 }}>
         {cards.map((card, i) => (
-          <div key={i} className="bg-[#1a1a1a] border-2 border-[#383838] rounded-2xl px-8 py-6 flex flex-col items-center gap-1">
-            <span className="text-5xl font-bold leading-none">{card.rank}</span>
-            <span className={`text-4xl leading-none ${SUIT_CLASS[card.suit]}`}>
-              {card.suit}
-            </span>
-          </div>
+          <CardDisplay key={i} card={card} glow={glow} />
         ))}
       </div>
 
-      <p className="text-center text-base text-[#a0a0a0] mb-6">Ваше действие?</p>
+      <p style={{ textAlign: 'center', color: '#888', fontSize: 14, marginBottom: 18 }}>
+        Ваше действие?
+      </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      {/* Кнопки */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
         {options.map((opt) => {
           const isCorrect = answered && opt.value === question.correct
           const isChosen = answered && opt.value === chosen
           const isWrong = isChosen && !isCorrect
+
+          let bg = '#2a2a2a'
+          let color = '#ffffff'
+          let border = '2px solid #333'
+
+          if (isCorrect) {
+            bg = 'rgba(34,197,94,0.15)'
+            color = '#22c55e'
+            border = '2px solid rgba(34,197,94,0.4)'
+          } else if (isWrong) {
+            bg = 'rgba(239,68,68,0.15)'
+            color = '#ef4444'
+            border = '2px solid rgba(239,68,68,0.4)'
+          } else if (answered) {
+            bg = '#1a1a1a'
+            color = '#444'
+            border = '2px solid #222'
+          }
 
           return (
             <button
               key={opt.value}
               onClick={() => !answered && onAnswer(opt.value)}
               disabled={answered}
-              className={`
-                py-4 px-4 rounded-2xl text-sm font-semibold whitespace-pre-line
-                transition-all border-2
-                ${isCorrect
-                  ? 'bg-green-600/20 text-green-400 border-green-600/40'
-                  : isWrong
-                  ? 'bg-red-600/20 text-red-400 border-red-600/40'
-                  : answered
-                  ? 'bg-[#1a1a1a] text-[#505050] border-[#383838] opacity-40'
-                  : 'bg-[#2e2e2e] text-white border-[#555] hover:bg-[#383838] active:scale-95'}
-              `}
+              style={{
+                background: bg,
+                color,
+                border,
+                borderRadius: 16,
+                padding: '12px 10px',
+                fontSize: 12,
+                fontWeight: 600,
+                whiteSpace: 'pre-line',
+                cursor: answered ? 'default' : 'pointer',
+                transition: 'all 0.2s',
+                opacity: answered && !isCorrect && !isChosen ? 0.35 : 1,
+                lineHeight: 1.4,
+              }}
             >
               {opt.label}
             </button>
@@ -177,14 +210,27 @@ export default function QuizCard(props: QuizCardProps) {
         })}
       </div>
 
+      {/* Результат */}
       {answered && (
-        <div className="text-center">
-          <p className="text-sm text-[#a0a0a0] mb-6">
-            Правильно: <span className="text-green-400 font-semibold text-base">{correctLabel}</span>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: 14, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
+            {isCorrectAnswer
+              ? <span style={{ color: '#22c55e', fontWeight: 700 }}>✅ Верно!</span>
+              : <><span style={{ color: '#ef4444', fontWeight: 700 }}>❌ Ошибка!</span> Правильно: <span style={{ color: '#22c55e', fontWeight: 700 }}>{correctLabel}</span></>
+            }
           </p>
           <button
             onClick={onNext}
-            className="bg-white text-black py-3 px-8 rounded-2xl font-semibold text-base hover:bg-gray-200 active:scale-95 transition-all"
+            style={{
+              background: '#ffffff',
+              color: '#000000',
+              border: 'none',
+              borderRadius: 18,
+              padding: '13px 36px',
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
           >
             Следующий вопрос
           </button>
@@ -199,24 +245,19 @@ function parseHand(hand: string): Array<{ rank: string; suit: Suit }> {
   const cards: Array<{ rank: string; suit: Suit }> = []
 
   if (hand.length === 2) {
-    // Пара (например "AA")
     const suit1 = suits[Math.floor(Math.random() * 4)]
     let suit2 = suits[Math.floor(Math.random() * 4)]
     while (suit2 === suit1) suit2 = suits[Math.floor(Math.random() * 4)]
-
     cards.push({ rank: hand[0], suit: SUITS[suit1] })
     cards.push({ rank: hand[1], suit: SUITS[suit2] })
   } else if (hand.endsWith('s')) {
-    // Suited (например "AKs")
     const suit = suits[Math.floor(Math.random() * 4)]
     cards.push({ rank: hand[0], suit: SUITS[suit] })
     cards.push({ rank: hand[1], suit: SUITS[suit] })
   } else if (hand.endsWith('o')) {
-    // Offsuit (например "AKo")
     const suit1 = suits[Math.floor(Math.random() * 4)]
     let suit2 = suits[Math.floor(Math.random() * 4)]
     while (suit2 === suit1) suit2 = suits[Math.floor(Math.random() * 4)]
-
     cards.push({ rank: hand[0], suit: SUITS[suit1] })
     cards.push({ rank: hand[1], suit: SUITS[suit2] })
   }
