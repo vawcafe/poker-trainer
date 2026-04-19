@@ -155,13 +155,6 @@ export default function BBDefPage() {
                 </button>
               </div>
             )}
-
-            <div className="mt-8 text-center text-sm text-gray-500">
-              Правильно: {state.correct} из {state.total}
-              {state.total > 0 && (
-                <> ({Math.round((state.correct / state.total) * 100)}%)</>
-              )}
-            </div>
           </div>
         )}
       </main>
