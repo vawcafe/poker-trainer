@@ -55,7 +55,7 @@ export const RFI_CHARTS: Record<string, RFIChart> = {
 
   'HJ': {
     "AA":"r4","AKs":"r4","AQs":"fs","AJs":"bl","ATs":"bl","A9s":"rf","A8s":"rf","A7s":"rf","A6s":"rf","A5s":"rf","A4s":"rf","A3s":"rf","A2s":"rf",
-    "AKo":"r4","KK":"r4","KQs":"bl","KJs":"bl","KTs":"rf","K9s":"rf","K8s":"rf","K7s":"rf","K6s":"rf",
+    "AKo":"r4","KK":"r4","KQs":"bl","KJs":"bl","KTs":"rf","K9s":"rf","K8s":"rf","K7s":"rf","K6s":"rf","K5s":"rf",
     "JJ":"r4",
     "TT":"r4",
     "99":"r4",
@@ -67,7 +67,7 @@ export const RFI_CHARTS: Record<string, RFIChart> = {
 
   'CO': {
     "AA":"r4","AKs":"r4","AQs":"fs","AJs":"bl","ATs":"bl","A9s":"bl","A8s":"bl","A7s":"rf","A6s":"rf","A5s":"rf","A4s":"rf","A3s":"rf","A2s":"rf",
-    "AKo":"r4","KK":"r4","KQs":"bl","KJs":"bl","KTs":"rf","K9s":"rf","K8s":"rf","K7s":"rf","K6s":"rf",
+    "AKo":"r4","KK":"r4","KQs":"bl","KJs":"bl","KTs":"rf","K9s":"rf","K8s":"rf","K7s":"rf","K6s":"rf","K5s":"rf","K4s":"rf",
     "JJ":"r4",
     "TT":"r4",
     "99":"fs",
@@ -83,6 +83,7 @@ export const RFI_CHARTS: Record<string, RFIChart> = {
   'BTN': {
     "AA":"r4","AKs":"r4","AQs":"r4","AJs":"bl","ATs":"bl","A9s":"bl","A8s":"bl","A7s":"rf","A6s":"rf","A5s":"r4","A4s":"r4","A3s":"r4","A2s":"r4",
     "AKo":"r4","KK":"r4","KQs":"bl","KJs":"bl","KTs":"bl","K9s":"rf","K8s":"rf","K7s":"rf","K6s":"rf","K5s":"rf","K4s":"rf","K3s":"rf","K2s":"rf",
+    "AQo":"r4","KQo":"bl","QQ":"r4","QJs":"bl","QTs":"bl","Q9s":"rf","Q8s":"rf","Q7s":"rf","Q6s":"rf","Q5s":"rf",
     "TT":"r4",
     "99":"r4",
     "88":"fs",
