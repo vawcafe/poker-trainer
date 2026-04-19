@@ -9,8 +9,6 @@ import { useQuiz } from '../hooks/useQuiz'
 import { PUSH_FOLD, PF_POSITIONS, PF_LABEL, PF_COLOR, type PFPosition } from '../data/pushfold'
 
 // Для квиза Push/Fold спрашиваем: "Push or Fold при стеке Xbb?"
-// Перестраиваем данные: для каждой позиции делаем пары (стек, рука)
-
 const STACKS = [
   { key: 'c14', bb: [14,15] },
   { key: 'c12', bb: [12,13] },
@@ -20,7 +18,6 @@ const STACKS = [
   { key: 'c4',  bb: [4,5] },
 ]
 
-// Строим чарты для квиза: ключ = "EP_14bb" → {рука: push/fold}
 function buildQuizCharts() {
   const result: Record<string, Record<string, string>> = {}
   for (const pos of PF_POSITIONS) {
@@ -29,7 +26,6 @@ function buildQuizCharts() {
       const bbVal = bb[0]
       const chartKey = `${pos}_${bbVal}bb`
       const quizChart: Record<string, string> = {}
-      // Для каждой руки: можем пушить при этом стеке?
       for (let i = 0; i < 13; i++) {
         for (let j = 0; j < 13; j++) {
           const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2']
@@ -39,7 +35,6 @@ function buildQuizCharts() {
           if (!minStack) {
             quizChart[hk] = 'fold'
           } else {
-            // минимальный стек для пуша
             const minBB = parseInt(minStack.replace('c','')) ?? 99
             quizChart[hk] = bbVal >= minBB ? 'push' : 'fold'
           }
@@ -52,16 +47,6 @@ function buildQuizCharts() {
 }
 
 const PF_QUIZ_CHARTS = buildQuizCharts()
-
-const PF_QUIZ_COLORS: Record<string, string> = {
-  push: 'bg-green-500/20 text-green-400',
-  fold: 'bg-white/[0.04] text-white/[0.18]',
-}
-
-const PF_QUIZ_OPTIONS = [
-  { value: 'push', label: 'Пуш (All-in)' },
-  { value: 'fold', label: 'Фолд' },
-]
 
 export default function PushFoldPage() {
   const [userId, setUserId] = useState<string | null>(null)
@@ -76,7 +61,7 @@ export default function PushFoldPage() {
       if (!data.user) { router.push('/login'); return }
       setUserId(data.user.id)
     })
-  }, [])
+  }, [router])
 
   const { state, nextQuestion, answer } = useQuiz({
     charts: PF_QUIZ_CHARTS,
@@ -92,46 +77,47 @@ export default function PushFoldPage() {
     return `${parts[0]} — стек ${parts[1]}`
   })()
 
-  const correctLabel = state.question?.correct === 'push' ? 'Пуш (All-in)' : 'Фолд'
+  const handleAnswer = (correct: boolean) => {
+    answer(correct ? 'push' : 'fold')
+  }
 
   return (
     <div className="min-h-screen pb-20">
-      <div className="bg-[#1a1a1a] border-b border-[#383838] px-4 pt-4 pb-3">
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <h1 className="font-bold text-base">Push / Fold</h1>
-            <p className="text-[10px] text-[#505050]">Короткий стек, 4-15bb</p>
-          </div>
-          {tab === 'quiz' && state.streak > 0 && (
-            <span className="text-yellow-400 font-bold text-sm">{state.streak}⚡</span>
-          )}
+      <main>
+        <div className="mb-6">
+          <h1>Push / Fold</h1>
+          <p className="subtitle">Короткий стек, 4-15bb</p>
         </div>
 
-        <div className="flex gap-1.5 mb-3">
+        {/* Позиции */}
+        <div className="positions-grid mb-4">
           {PF_POSITIONS.map(p => (
-            <button key={p} onClick={() => { setPos(p); setTab('chart') }}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-colors
-                ${pos === p && tab === 'chart'
-                  ? 'bg-[#2D5016] text-white'
-                  : 'bg-[#242424] text-[#a0a0a0] hover:text-white border border-[#383838]'}`}>
+            <button
+              key={p}
+              onClick={() => { setPos(p); setTab('chart') }}
+              className={pos === p && tab === 'chart' ? 'active' : ''}
+            >
               {p}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-1.5">
-          {(['chart','quiz'] as const).map(t => (
-            <button key={t}
-              onClick={() => { setTab(t); if (t === 'quiz' && !state.question) nextQuestion() }}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors border
-                ${tab === t ? 'bg-[#2e2e2e] text-white border-[#555]' : 'bg-transparent text-[#a0a0a0] border-[#383838] hover:text-white'}`}>
+        {/* Табы */}
+        <div className="tabs">
+          {(['chart', 'quiz'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t)
+                if (t === 'quiz' && !state.question) nextQuestion()
+              }}
+              className={tab === t ? 'active' : ''}
+            >
               {t === 'chart' ? 'Чарт' : 'Квиз'}
             </button>
           ))}
         </div>
-      </div>
 
-      <div className="p-4">
         {tab === 'chart' && (
           <>
             <Grid13
@@ -141,9 +127,9 @@ export default function PushFoldPage() {
             />
 
             {hovered?.key && (
-              <div className="mt-3 bg-[#242424] border border-[#383838] rounded-xl px-4 py-2.5 text-sm">
+              <div className="card-compact">
                 <span className="font-bold">{hovered.key}</span>
-                <span className="text-[#a0a0a0] mx-2">→</span>
+                <span className="text-gray-500 mx-2">→</span>
                 <span className="text-white">
                   {hovered.value
                     ? `Пуш от ${PF_LABEL[hovered.value as keyof typeof PF_LABEL]}`
@@ -152,31 +138,31 @@ export default function PushFoldPage() {
               </div>
             )}
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="mt-6 space-y-2">
+              <p className="text-sm font-semibold mb-3">Легенда:</p>
               {Object.entries(PF_LABEL).map(([k, label]) => (
-                <div key={k} className="flex items-center gap-2">
-                  <div className={`w-5 h-5 rounded flex-shrink-0 ${PF_COLOR[k as keyof typeof PF_COLOR]?.split(' ')[0]}`} />
-                  <span className="text-[10px] text-[#a0a0a0]">Пуш от {label}</span>
+                <div key={k} className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-lg ${PF_COLOR[k as keyof typeof PF_COLOR]?.split(' ')[0]}`} />
+                  <span className="text-sm text-gray-400">Пуш от {label}</span>
                 </div>
               ))}
             </div>
           </>
         )}
 
-        {tab === 'quiz' && (
+        {tab === 'quiz' && state.question && (
           <QuizCard
-            question={state.question}
-            answered={state.answered}
-            chosen={state.chosen}
-            options={PF_QUIZ_OPTIONS}
-            title={quizTitle}
-            onAnswer={answer}
-            onNext={nextQuestion}
-            correctLabel={correctLabel}
-            streak={state.streak}
+            hand={state.question.handKey}
+            onAnswer={handleAnswer}
+            correctAction={state.question.correct}
+            stats={{
+              total: 0,
+              correct: 0,
+              streak: state.streak,
+            }}
           />
         )}
-      </div>
+      </main>
       <NavBar />
     </div>
   )
